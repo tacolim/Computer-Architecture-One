@@ -19,15 +19,13 @@ function processFile(content, cpu, onComplete) {
 
         // !!! IMPLEMENT ME
 
-        // Strip comments
+        line = line.replace(/#(.*)|\s/g, ''); // Strip comments and remove whitespace from either end of the line
 
-        // Remove whitespace from either end of the line
-
-        // Ignore empty lines
-
-        // Convert from binary string to numeric value
-
-        // Store in the CPU with the .poke() function
+        if (line.length === 0) continue; // Ignore empty lines
+        
+        let val = parseInt(line, 2); // Convert from binary string to numeric value
+        
+        cpu.poke(curAddr, val); // Store in the CPU with the .poke() function
 
         // And on to the next one
         curAddr++;
