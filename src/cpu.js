@@ -8,10 +8,14 @@ const fs = require('fs');
 
 const HLT  = 0b00011011; // Halt CPU
 const LDI = 0b00000100; // LDI
+const ADD = 0b00001100; // ADD
 const MUL = 0b00000101; // MUL
 const PRN = 0b00000110; // PRN
 const PUSH = 0b00001010; // PUSH
 const POP = 0b00001011; // POP
+const CALL = 0b00001111; // CALL
+const RET = 0b00010000; // RET
+const JMP = 0b00010001; // JMP
 
 /**
  * Class for simulating a simple Computer (CPU & memory)
@@ -44,9 +48,13 @@ class CPU {
         bt[HLT] = this.HLT;
         bt[LDI] = this.LDI; // LDI
         bt[MUL] = this.MUL; // MUL
+        bt[ADD] = this.ADD; // MUL
         bt[PRN] = this.PRN; // PRN
-        bt[PUSH] = this.PUSH; // PRN
-        bt[POP] = this.POP; // PRN
+        bt[PUSH] = this.PUSH; // PUSH
+        bt[POP] = this.POP; // POP
+        bt[CALL] = this.CALL; // CALL
+        bt[RET] = this.RET; // RET
+        bt[JMP] = this.JMP; // JMP
 
 		this.branchTable = bt;
 	}
@@ -86,6 +94,10 @@ class CPU {
         let valB = this.reg[regB];
 
         switch (op) {
+            case 'ADD':
+                // !!! IMPLEMENT ME
+                this.reg[regA] = valA + valB & 0b11111111;
+                break;
             case 'MUL':
                 // !!! IMPLEMENT ME
                 this.reg[regA] = valA * valB & 0b11111111;
@@ -102,7 +114,7 @@ class CPU {
         // Load the instruction register from the current PC
         this.reg.IR = this.ram.read(this.reg.PC);
         // Debugging output
-        //console.log(`${this.reg.PC}: ${this.reg.IR.toString(2)}`);
+        // console.log(`${this.reg.PC}: ${this.reg.IR.toString(2)}`);
 
         // Based on the value in the Instruction Register, jump to the
         // appropriate hander in the branchTable
@@ -146,6 +158,17 @@ class CPU {
     }
 
     /**
+     * ADD R,R
+     */
+    ADD() {
+        // !!! IMPLEMENT ME
+        const regA = this.ram.read(this.reg.PC + 1);
+        const regB  = this.ram.read(this.reg.PC + 2);
+
+        this.alu('ADD', regA, regB);
+        this.reg.PC += 3; // Move the PC
+    }
+    /**
      * MUL R,R
      */
     MUL() {
@@ -185,9 +208,32 @@ class CPU {
         
         this.reg[regA] = this.ram.read(this.reg[7]);
         
-        this.reg[7]++;
+        this.reg[7]++; // increment register 7
 
         this.reg.PC += 2; // Move the PC
+    }
+
+    CALL() {
+      this.reg[7]--; // decrement register 7;
+      this.ram.write(this.reg[7], this.reg.PC+2);
+
+      const regA = this.ram.read(this.reg.PC+1);
+
+      this.reg.PC = this.reg[regA];
+
+    }
+
+    RET() {        
+        this.reg.PC = this.ram.read(this.reg[7]);
+        
+        this.reg[7]++;
+
+    }
+
+    JMP() {
+        const regA = this.ram.read(this.reg.PC+1);
+
+        this.reg.PC = this.reg[regA];
     }
 }
 
