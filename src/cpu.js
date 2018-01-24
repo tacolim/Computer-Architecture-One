@@ -10,6 +10,8 @@ const HLT  = 0b00011011; // Halt CPU
 const LDI = 0b00000100; // LDI
 const MUL = 0b00000101; // MUL
 const PRN = 0b00000110; // PRN
+const PUSH = 0b00001010; // PUSH
+const POP = 0b00001011; // POP
 
 /**
  * Class for simulating a simple Computer (CPU & memory)
@@ -24,6 +26,8 @@ class CPU {
 
         this.reg = new Array(8).fill(0); // General-purpose registers
         
+        this.reg[7] = 0xF8;
+
         // Special-purpose registers
         this.reg.PC = 0; // Program Counter
         this.reg.IR = 0; // Instruction Register
@@ -41,6 +45,8 @@ class CPU {
         bt[LDI] = this.LDI; // LDI
         bt[MUL] = this.MUL; // MUL
         bt[PRN] = this.PRN; // PRN
+        bt[PUSH] = this.PUSH; // PRN
+        bt[POP] = this.POP; // PRN
 
 		this.branchTable = bt;
 	}
@@ -96,7 +102,7 @@ class CPU {
         // Load the instruction register from the current PC
         this.reg.IR = this.ram.read(this.reg.PC);
         // Debugging output
-        // console.log(`${this.reg.PC}: ${this.reg.IR.toString(2)}`);
+        //console.log(`${this.reg.PC}: ${this.reg.IR.toString(2)}`);
 
         // Based on the value in the Instruction Register, jump to the
         // appropriate hander in the branchTable
@@ -161,6 +167,27 @@ class CPU {
         
         this.reg.PC += 2; // Move the PC
         
+    }
+
+    PUSH() {
+        // !!! IMPLEMENT ME
+        const regA = this.ram.read(this.reg.PC+1);
+
+        this.reg[7]--; // decrement register 7;
+        this.ram.write(this.reg[7], this.reg[regA]);
+        
+        this.reg.PC += 2; // Move the PC
+        
+    }
+    
+    POP() {
+        const regA = this.ram.read(this.reg.PC+1);
+        
+        this.reg[regA] = this.ram.read(this.reg[7]);
+        
+        this.reg[7]++;
+
+        this.reg.PC += 2; // Move the PC
     }
 }
 
